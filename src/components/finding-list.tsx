@@ -1,3 +1,5 @@
+"use client";
+
 import { WarningIcon, WarningOctagonIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
