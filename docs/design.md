@@ -125,12 +125,12 @@ Base 4px; use the Tailwind scale (`1`=4 to `12`=48). Conventions:
 
 ### 3.5 Layout and responsive
 
-Mobile first. Tailwind breakpoints (sm 640, md 768, lg 1024, xl 1280).
+Mobile first. Tailwind breakpoints (sm 640, md 768, lg 1024, xl 1280). Responsiveness (adapting one piece of content to the current viewport) is separate from the shell width (how wide content may get on a large screen). Every component is responsive in both areas; the shell only caps and frames by content type.
 
 - **Official area** (dashboard, slot detail, lineup review): built for lg and up, data tables, multi-column; below md, tables collapse to stacked cards, never sideways scroll. Container max about 1200px.
-- **Team area** (my slots, builder, submit): designed at 390px first, single column, one primary action, a sticky bottom bar for Submit; scales to a centred column (max about 480px). 44px touch targets.
+- **Team area** (my slots, builder, submit): a single centred column capped at about 480px on every screen (a form reads best narrow, even on desktop), full width with small gutters on a phone. One primary action, a sticky bottom bar for Submit. 44px touch targets. This is a narrow desktop column, not a phone-only view.
 - **Forms**: max about 480 to 560px, single column, labels above fields.
-- **App shell**: top bar with brand, identity, sign out. Officials get top-bar navigation; the team shell stays minimal.
+- **App shell**: a `NavBar` with brand, identity, sign out, and the theme toggle, added by each area layout (not the root layout, so auth routes stay shell-free). Officials get nav in the bar; the team shell stays minimal.
 
 ### 3.6 Motion
 
@@ -168,13 +168,15 @@ Use the shadcn primitives as the base. Each must show its full state set where r
 
 Built on the primitives; each is the single source for its concern.
 
+- **Typography**: the only place a text level maps to size, weight, and line height.
+- **PageHeader**: the one h1, an optional description, and an actions slot. Rendered by each page, not the layout (the title is per page).
+- **NavBar**: the app shell bar (brand, theme toggle, an optional slot for identity and nav). Rendered by each area layout.
 - **StatusBadge**: the only place a status maps to a colour, label, and icon (section 10).
 - **FindingList** and **FindingItem**: the only place severity maps to style. Renders a ValidationResult; each finding shows a severity icon and colour (block red, flag amber), the message, the how-to-fix text, and the location. Never colour alone.
+- **EmptyState**, **ErrorState**, **SkeletonText** / **TableSkeleton**: the shared loading, empty, and error states (section 7).
 - **SubmissionsTable**: admitted teams with submitted or outstanding state, status badge, version, time; outstanding marked. Cards on mobile.
 - **LineupLayout** (read) and **LineupGrid** (editable): entries in canonical event order (section 10), laid out as entered into Tournament Software; the grid constrains picks to the Approved Team List.
 - **TieFormatSummary**: matches required per event.
-- **PageHeader**: the h1 and an actions slot, consistent gutters.
-- **EmptyState**, **ErrorState**: section 7.
 
 ## 6. Patterns
 
@@ -246,9 +248,10 @@ Every data view handles four states:
 ## 11. Code conventions
 
 - Structure: `components/ui` (shadcn), `components/` (domain), `app/` (routes and groups), `lib/api` (generated client and query hooks), `lib/` (utilities).
+- Route groups: `(official)` and `(team)` set the area shell and are organisational only. The parentheses keep the folder out of the URL and grant no access control; auth guards are enforced by the backend and, for UX, in the layout or middleware.
 - Tokens only: semantic Tailwind classes (`bg-background`, `text-foreground`, `text-muted-foreground`, `bg-primary text-primary-foreground`, `border-border`, `text-destructive`). No raw hex or ad hoc sizes.
 - Single sources: Typography owns text levels; StatusBadge owns status styling; FindingList owns severity styling. Nothing else sets them.
-- Icons: Phosphor via `@phosphor-icons/react`, always the `Icon`-suffixed export (`FlagIcon`, not `Flag`).
+- Icons: Phosphor via `@phosphor-icons/react`, always the `Icon`-suffixed export (`FlagIcon`, not `Flag`). Phosphor loads a React context at import, so any component that renders an icon is a Client Component (`"use client"`).
 - Data: TanStack Query hooks wrap the typed `openapi-fetch` client; types from the generated `schema.ts`. Never hand-write API types or calls; regenerate when the backend changes.
 - Security: hide actions a role cannot take, but always assume the server enforces the rule.
 
@@ -265,7 +268,7 @@ Every data view handles four states:
 Deferred until the relevant milestone:
 
 - Data-visualisation tokens (`--chart-1` to `--chart-5`) and a charting system, for reporting screens.
-- Dark-mode palette fine-tuning and the in-app theme toggle UI (the token architecture is ready).
+- Dark-mode palette fine-tuning (the token architecture and the toggle are already in place).
 - A fuller motion and transition system.
 - Notification UI (team slot-opening alerts, reminders), with any future notification stories.
 - Print and export styling for an approved lineup.
